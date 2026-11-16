@@ -308,7 +308,7 @@ function drawTitle(ctx, state, best, selectedHero) {
     ctx.lineWidth = selected ? 3 : 1.5;
     roundRect(ctx, x, y, cardW, TITLE_CARDS.h, 12);
     ctx.stroke();
-    drawHeroPortrait(ctx, hero, x + cardW / 2, y + 62, 30);
+    drawHeroPortrait(ctx, hero, x + cardW / 2, y + 58, 38);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 18px Arial, sans-serif';
     ctx.fillText(hero.name, x + cardW / 2, y + 168);
@@ -339,7 +339,7 @@ function drawTitle(ctx, state, best, selectedHero) {
   ctx.fillText('— YOUR SQUAD —', 640, 492);
   SQUAD.forEach((member, i) => {
     const cx = 640 + (i - 2) * 150;
-    drawHeroPortrait(ctx, squadById(member.id), cx, 528, 20);
+    drawHeroPortrait(ctx, squadById(member.id), cx, 528, 24);
     ctx.fillStyle = '#e8e0d0';
     ctx.font = 'bold 13px Arial, sans-serif';
     ctx.fillText(member.name, cx, 606);
