@@ -1,23 +1,33 @@
-// Titan Slayer — hero art (anime-faithful re-author).
+// Skyfall Slayers — hero art (original anime design).
 // Pure canvas 2D. No network, no libraries, fully deterministic.
 // Portraits: (x, y) is the HEAD CENTRE, s = head radius.
 // Sprites: (x, y) is the body centre, ~50px tall, head radius ~11.
+//
+// NOTE (2026-11-16, found while re-verifying the rename): heroById used to return
+// the art-only ROSTER entry, which has no speed/slashRate stats — so the first
+// play step computed maxSpeed = 340 * undefined = NaN and the soldier's x/vx
+// went NaN the moment a game started (proven identical on unmodified HEAD
+// 232efe8 via git stash). It now merges the art entry with the matching config
+// HEROES entry, so a picked hero always carries its real stats.
+import { HEROES } from './config.js';
 
 // ---------------------------------------------------------------- roster ----
 export const ROSTER = [
-  { id: 'eren',   name: 'Eren Yeager',   title: 'Attack Titan',        hair: '#6b4a2f', hairStyle: 'shaggy',   eyes: '#3f7d3a', skin: '#f2c9a0', scarf: null,     ascot: false, cloak: true, glasses: false },
-  { id: 'mikasa', name: 'Mikasa Ackerman', title: 'Ackerman',          hair: '#161616', hairStyle: 'bob',      eyes: '#4a4a52', skin: '#f5d0b0', scarf: '#c0392b', ascot: false, cloak: true, glasses: false },
-  { id: 'levi',   name: 'Levi Ackerman', title: "Humanity's Strongest", hair: '#0d0d0d', hairStyle: 'undercut', eyes: '#8a8f98', skin: '#f0c8a0', scarf: null,     ascot: true,  cloak: true, glasses: false },
-  { id: 'armin',  name: 'Armin Arlert',  title: 'Strategist',          hair: '#f2d06b', hairStyle: 'bangs',    eyes: '#4a7ec2', skin: '#f6d3b3', scarf: null,     ascot: false, cloak: true, glasses: false },
-  { id: 'sasha',  name: 'Sasha Braus',   title: 'Potato Girl',         hair: '#a34d2d', hairStyle: 'ponytail', eyes: '#7a4a2a', skin: '#f2c9a0', scarf: null,     ascot: false, cloak: true, glasses: false },
-  { id: 'connie', name: 'Connie Springer', title: 'Springer',          hair: '#2e2e2e', hairStyle: 'buzz',     eyes: '#6b5a4a', skin: '#e8b98f', scarf: null,     ascot: false, cloak: true, glasses: false },
-  { id: 'jean',   name: 'Jean Kirstein', title: 'The Horse',           hair: '#9a8f7a', hairStyle: 'spiky',    eyes: '#7a5a3a', skin: '#f0c8a0', scarf: null,     ascot: false, cloak: true, glasses: false },
-  { id: 'hange',  name: 'Hange Zoë',     title: 'Section Commander',   hair: '#6b4a2f', hairStyle: 'ponytail', eyes: '#5a3a22', skin: '#f5d0b0', scarf: null,     ascot: false, cloak: true, glasses: true },
-  { id: 'erwin',  name: 'Erwin Smith',   title: 'Commander',           hair: '#e8d27a', hairStyle: 'side',     eyes: '#3a6ea5', skin: '#eec39a', scarf: null,     ascot: false, cloak: true, glasses: false },
+  { id: 'kael',   name: 'Kael Voss',     title: 'The Vanguard',          hair: '#7a3b22', hairStyle: 'shaggy',   eyes: '#3f7d3a', skin: '#f2c9a0', scarf: null,     ascot: false, cloak: true, glasses: false },
+  { id: 'sera',   name: 'Sera Quinn',    title: 'Fastest Blades',        hair: '#161616', hairStyle: 'bob',      eyes: '#4a4a52', skin: '#f5d0b0', scarf: '#0f766e', ascot: false, cloak: true, glasses: false },
+  { id: 'dain',   name: 'Dain Mercer',   title: "The Corps' Strongest",  hair: '#0d0d0d', hairStyle: 'undercut', eyes: '#8a8f98', skin: '#f0c8a0', scarf: null,     ascot: true,  cloak: true, glasses: false },
+  { id: 'milo',   name: 'Milo Thorne',   title: 'Strategist',            hair: '#f2d06b', hairStyle: 'bangs',    eyes: '#2a9d8f', skin: '#f6d3b3', scarf: null,     ascot: false, cloak: true, glasses: false },
+  { id: 'pippa',  name: 'Pippa Lane',    title: 'Snack Scout',           hair: '#a34d2d', hairStyle: 'ponytail', eyes: '#7a4a2a', skin: '#f2c9a0', scarf: null,     ascot: false, cloak: true, glasses: false },
+  { id: 'theo',   name: 'Theo Marsh',    title: 'The Loyal',             hair: '#2e2e2e', hairStyle: 'buzz',     eyes: '#6b5a4a', skin: '#e8b98f', scarf: null,     ascot: false, cloak: true, glasses: false },
+  { id: 'marcus', name: 'Marcus Hale',   title: 'By the Book',           hair: '#9a8f7a', hairStyle: 'spiky',    eyes: '#7a5a3a', skin: '#f0c8a0', scarf: null,     ascot: false, cloak: true, glasses: false },
+  { id: 'wren',   name: 'Wren Solace',   title: 'Research Lead',         hair: '#6b4a2f', hairStyle: 'ponytail', eyes: '#5a3a22', skin: '#f5d0b0', scarf: null,     ascot: false, cloak: true, glasses: true },
+  { id: 'alden',  name: 'Alden Cross',   title: 'Commander',             hair: '#e8d27a', hairStyle: 'side',     eyes: '#3a6ea5', skin: '#eec39a', scarf: null,     ascot: false, cloak: true, glasses: false },
 ];
 
 export function heroById(id) {
-  return ROSTER.find((h) => h.id === id) || ROSTER[0];
+  const art = ROSTER.find((h) => h.id === id) || ROSTER[0];
+  const stats = HEROES.find((h) => h.id === id) || HEROES[0];
+  return { ...stats, ...art };
 }
 
 export function squadById(id) {
@@ -50,15 +60,15 @@ function ellipse(ctx, x, y, rx, ry) {
 // Per-character face geometry: jaw taper (1 = round, lower = narrower),
 // chin point (0 = soft, 1 = sharp), brow style, eye height factor.
 const FACE = {
-  eren:   { jaw: 0.80, chin: 0.55, brow: 'thickAngled', eyeH: 1.0,  frown: true },
-  mikasa: { jaw: 0.92, chin: 0.25, brow: 'straight',    eyeH: 0.95, frown: false },
-  levi:   { jaw: 0.70, chin: 0.85, brow: 'thinLow',     eyeH: 0.9,  frown: false, darkCircles: true },
-  armin:  { jaw: 0.96, chin: 0.15, brow: 'softArched',  eyeH: 1.18, frown: false },
-  sasha:  { jaw: 0.90, chin: 0.30, brow: 'softArched',  eyeH: 1.0,  frown: false },
-  connie: { jaw: 0.86, chin: 0.35, brow: 'thickAngled', eyeH: 0.95, frown: false },
-  jean:   { jaw: 0.82, chin: 0.45, brow: 'thickAngled', eyeH: 0.95, frown: false },
-  hange:  { jaw: 0.90, chin: 0.30, brow: 'softArched',  eyeH: 1.05, frown: false },
-  erwin:  { jaw: 0.78, chin: 0.40, brow: 'thick',       eyeH: 0.95, frown: false },
+  kael:   { jaw: 0.80, chin: 0.55, brow: 'thickAngled', eyeH: 1.0,  frown: true },
+  sera:   { jaw: 0.92, chin: 0.25, brow: 'straight',    eyeH: 0.95, frown: false },
+  dain:   { jaw: 0.70, chin: 0.85, brow: 'thinLow',     eyeH: 0.9,  frown: false, darkCircles: true },
+  milo:   { jaw: 0.96, chin: 0.15, brow: 'softArched',  eyeH: 1.18, frown: false },
+  pippa:  { jaw: 0.90, chin: 0.30, brow: 'softArched',  eyeH: 1.0,  frown: false },
+  theo:   { jaw: 0.86, chin: 0.35, brow: 'thickAngled', eyeH: 0.95, frown: false },
+  marcus: { jaw: 0.82, chin: 0.45, brow: 'thickAngled', eyeH: 0.95, frown: false },
+  wren:   { jaw: 0.90, chin: 0.30, brow: 'softArched',  eyeH: 1.05, frown: false },
+  alden:  { jaw: 0.78, chin: 0.40, brow: 'thick',       eyeH: 0.95, frown: false },
 };
 function faceOf(person) {
   return FACE[person.id] || { jaw: 0.88, chin: 0.35, brow: 'softArched', eyeH: 1.0, frown: false };
@@ -203,7 +213,7 @@ function strand(ctx, pts, w, color, hi) {
   }
 }
 
-// Wings of Freedom emblem: two mirrored feathered wings in gold.
+// Wings of Dawn emblem: two mirrored feathered wings in gold.
 function drawWingsEmblem(ctx, cx, cy, sc) {
   ctx.save();
   ctx.translate(cx, cy);
@@ -254,7 +264,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
   };
 
   if (style === 'shaggy') {
-    // Eren: messy layered spikes over the forehead, longer at the sides.
+    // Kael: messy layered spikes over the forehead, longer at the sides.
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.moveTo(x - s * 1.04, y - s * 0.05);
@@ -286,7 +296,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
       strand(ctx, p.map(([a, b]) => [x + a * s, y + b * s]), 3.2 * u, lo, hi);
     }
   } else if (style === 'bob') {
-    // Mikasa: straight black bob, bangs, chin-length, side locks framing face.
+    // Sera: straight black bob, bangs, chin-length, side locks framing face.
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.moveTo(x - s * 1.04, y + s * 0.62);
@@ -320,7 +330,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
     ];
     for (const p of locks) strand(ctx, p.map(([a, b]) => [x + a * s, y + b * s]), 2.6 * u, lo, hi);
   } else if (style === 'undercut') {
-    // Levi: neat curtain fringe parted in the middle, short sides.
+    // Dain: neat curtain fringe parted in the middle, short sides.
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.moveTo(x - s * 0.98, y - s * 0.12);
@@ -342,7 +352,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
     ];
     for (const p of fringe) strand(ctx, p.map(([a, b]) => [x + a * s, y + b * s]), 2.8 * u, lo, hi);
   } else if (style === 'bangs') {
-    // Armin: blond, straight bangs across the whole forehead, rounded top.
+    // Milo: blond, straight bangs across the whole forehead, rounded top.
     baseTop(0.30);
     ctx.fillStyle = c;
     ctx.beginPath();
@@ -364,7 +374,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
     ];
     for (const p of strands) strand(ctx, p.map(([a, b]) => [x + a * s, y + b * s]), 2.8 * u, lo, hi);
   } else if (style === 'ponytail') {
-    // Sasha / Hange: pulled-back hair, high tail flowing to the side.
+    // Pippa / Wren: pulled-back hair, high tail flowing to the side.
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.moveTo(x - s * 0.98, y - s * 0.15);
@@ -387,7 +397,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
     ctx.closePath();
     ctx.fill();
     // Tie band.
-    ctx.fillStyle = person.id === 'hange' ? '#3a3a3a' : '#5a2d18';
+    ctx.fillStyle = person.id === 'wren' ? '#3a3a3a' : '#5a2d18';
     ellipse(ctx, tailBaseX - s * 0.16, tailBaseY + s * 0.02, s * 0.10, s * 0.08);
     const tstrands = [
       [[0.35, -1.05], [0.85, -1.35], [1.15, -0.95]],
@@ -399,7 +409,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
     ];
     for (const p of tstrands) strand(ctx, p.map(([a, b]) => [x + a * s, y + b * s]), 2.8 * u, lo, hi);
   } else if (style === 'buzz') {
-    // Connie: very short buzz — a thin cap hugging the skull + texture strokes.
+    // Theo: very short buzz — a thin cap hugging the skull + texture strokes.
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.moveTo(x - s * 0.96, y - s * 0.05);
@@ -418,7 +428,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
       ctx.stroke();
     }
   } else if (style === 'spiky') {
-    // Jean: spiky ash-brown undercut, spikes up and out.
+    // Marcus: spiky ash-brown undercut, spikes up and out.
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.moveTo(x - s * 1.0, y - s * 0.10);
@@ -448,7 +458,7 @@ function drawHairPortrait(ctx, person, x, y, s) {
     ];
     for (const p of spikes) strand(ctx, p.map(([a, b]) => [x + a * s, y + b * s]), 3 * u, lo, hi);
   } else if (style === 'side') {
-    // Erwin: swept-back blond side part, neat combed strands.
+    // Alden: swept-back blond side part, neat combed strands.
     ctx.fillStyle = c;
     ctx.beginPath();
     ctx.moveTo(x - s * 1.0, y - s * 0.12);
@@ -584,7 +594,7 @@ export function drawHeroPortrait(ctx, person, x, y, s) {
   ctx.fillRect(x - s * 0.42, y + s * 1.52, s * 0.16, s * 0.12);
   ctx.fillRect(x + s * 0.26, y + s * 1.52, s * 0.16, s * 0.12);
 
-  // ---- Wings of Freedom emblem on the chest ----
+  // ---- Wings of Dawn emblem on the chest ----
   // drawWingsEmblem scales its ~34-unit-wide wingspan by `sc`, so pass a
   // small factor: total width ≈ s * 0.028 * 34 ≈ 0.95 * s.
   drawWingsEmblem(ctx, x, y + s * 1.78, s * 0.028);
@@ -658,7 +668,7 @@ export function drawHeroPortrait(ctx, person, x, y, s) {
   // ---- hair (over the forehead) ----
   drawHairPortrait(ctx, p, x, y, s);
 
-  // ---- glasses (Hange) ----
+  // ---- glasses (Wren) ----
   if (p.glasses) {
     ctx.strokeStyle = '#2a2a2a';
     ctx.lineWidth = Math.max(1.2, s * 0.05);
@@ -684,7 +694,7 @@ export function drawHeroPortrait(ctx, person, x, y, s) {
     ctx.stroke();
   }
 
-  // ---- scarf (Mikasa) ----
+  // ---- scarf (Sera) ----
   if (p.scarf) {
     ctx.fillStyle = p.scarf;
     ctx.beginPath();
@@ -713,9 +723,9 @@ export function drawHeroPortrait(ctx, person, x, y, s) {
     ctx.fill();
   }
 
-  // ---- ascot (Levi) ----
+  // ---- ascot (Dain), dark navy ----
   if (p.ascot) {
-    ctx.fillStyle = '#f4f1e8';
+    ctx.fillStyle = '#1f2a44';
     ctx.beginPath();
     ctx.moveTo(x - s * 0.16, y + s * 1.02);
     ctx.lineTo(x + s * 0.16, y + s * 1.02);
@@ -810,7 +820,7 @@ export function drawHeroSprite(ctx, hero, x, y, facing, slashT, swinging) {
   ctx.moveTo(8, -6);
   ctx.lineTo(-6, 6);
   ctx.stroke();
-  // ODM hip boxes.
+  // Skyhook hip boxes.
   ctx.fillStyle = '#5a4632';
   ctx.fillRect(-11, 0, 4, 6);
   ctx.fillRect(7, 0, 4, 6);
@@ -1035,7 +1045,7 @@ export function drawHeroSprite(ctx, hero, x, y, facing, slashT, swinging) {
     ctx.fillRect(hx0 - hr * 1.0, hy0 - hr * 0.1, hr * 0.22, hr * 0.62);
     ctx.fillRect(hx0 + hr * 0.78, hy0 - hr * 0.1, hr * 0.22, hr * 0.62);
   }
-  // Glasses on the sprite (Hange).
+  // Glasses on the sprite (Wren).
   if (p.glasses) {
     ctx.strokeStyle = '#2a2a2a';
     ctx.lineWidth = 1;

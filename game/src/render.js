@@ -1,9 +1,9 @@
-// Everything the player sees: Shiganshina at dusk under Wall Maria, the Titans, the
+// Everything the player sees: Aurelia at dusk under Wall Aegis, the Ravagers, the
 // swinging soldier, the HUD, and every screen — title with the four hero portraits,
 // pause, game over and victory. Canvas 2D only, no images, no network.
 import { ANCHORS, BUILDINGS, GROUND_Y, HEROES, SQUAD, VIEW, WALL_X } from './config.js';
 import { drawHeroPortrait, drawHeroSprite, heroById, squadById } from './characters.js';
-import { drawSteam, drawTitan, napePosition } from './titans.js';
+import { drawSteam, drawRavager, napePosition } from './ravagers.js';
 
 export const SCREEN_TITLE = 'title';
 export const SCREEN_PLAY = 'play';
@@ -48,12 +48,12 @@ function drawBackground(ctx, time) {
     ctx.ellipse(cx + 50, cy + 8, 60, 14, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  // Distant Wall Rose on the horizon.
+  // Distant outer wall on the horizon.
   ctx.fillStyle = '#5a4a58';
   ctx.fillRect(0, 470, VIEW.width, 26);
   ctx.fillStyle = '#6a5568';
   for (let x = 40; x < VIEW.width; x += 90) ctx.fillRect(x, 452, 34, 44);
-  // Shiganshina rooftops.
+  // Aurelia rooftops.
   for (const b of BUILDINGS) {
     ctx.fillStyle = '#3a2c28';
     ctx.fillRect(b.x, b.y, b.w, b.h);
@@ -71,7 +71,7 @@ function drawBackground(ctx, time) {
       }
     }
   }
-  // Wall Maria, the 50 m ring wall on the left.
+  // Wall Aegis, the 50 m ring wall on the left.
   ctx.fillStyle = '#9a8a72';
   ctx.fillRect(0, 130, WALL_X, GROUND_Y - 130);
   ctx.fillStyle = '#8a7a62';
@@ -82,7 +82,7 @@ function drawBackground(ctx, time) {
   }
   ctx.fillStyle = '#7a6a52';
   ctx.fillRect(0, 130, WALL_X, 14);
-  // Wings of Freedom banner on the Wall.
+  // Wings of Dawn banner on the Wall.
   ctx.fillStyle = '#2e5d33';
   ctx.fillRect(28, 150, 40, 64);
   ctx.strokeStyle = '#d8c98a';
@@ -130,10 +130,10 @@ function drawCable(ctx, player) {
   ctx.stroke();
 }
 
-function drawTitans(ctx, state) {
-  for (const t of state.titans) {
-    drawTitan(ctx, t, state.time);
-    if (t.kind === 'colossal') {
+function drawRavagers(ctx, state) {
+  for (const t of state.ravagers) {
+    drawRavager(ctx, t, state.time);
+    if (t.kind === 'colossus') {
       drawSteam(ctx, t.x, t.feetY - t.height * 0.7, t.height * 0.16, state.time, t.deform * 10);
       drawSteam(ctx, t.x - t.height * 0.08, t.feetY - t.height * 0.4, t.height * 0.12, state.time, t.deform * 20);
     }
@@ -147,7 +147,7 @@ function drawTitans(ctx, state) {
       ctx.textAlign = 'center';
       ctx.fillText('▼ NAPE', nape.x, nape.y - nape.r - 14 + bob);
     }
-    // Boss health bar above a shifter boss.
+    // Boss health bar above a boss Ravager.
     if (state.boss === t) {
       const w = 130;
       const x = t.x - w / 2;
@@ -215,11 +215,11 @@ function drawHud(ctx, state, best) {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 22px Arial, sans-serif';
-  const remaining = state.titans.length + state.spawnList.length;
+  const remaining = state.ravagers.length + state.spawnList.length;
   ctx.fillText(state.waveState === 'between' ? `WAVE ${state.wave + 1} INCOMING` : `WAVE ${state.wave} / 10`, 640, 28);
   ctx.fillStyle = '#ffb0a0';
   ctx.font = 'bold 15px Arial, sans-serif';
-  ctx.fillText(state.waveState === 'between' ? 'Get ready — hook an anchor!' : `${remaining} Titan${remaining === 1 ? '' : 's'} left`, 640, 52);
+  ctx.fillText(state.waveState === 'between' ? 'Get ready — hook an anchor!' : `${remaining} Ravager${remaining === 1 ? '' : 's'} left`, 640, 52);
   // Lives as blades.
   for (let i = 0; i < state.lives; i += 1) {
     ctx.strokeStyle = '#dfe6ea';
@@ -230,7 +230,7 @@ function drawHud(ctx, state, best) {
   ctx.textAlign = 'left';
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 14px Arial, sans-serif';
-  ctx.fillText('WALL MARIA', 1120, 16);
+  ctx.fillText('WALL AEGIS', 1120, 16);
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(1120, 22, 140, 12);
   ctx.fillStyle = state.wallHP > 40 ? '#7ec850' : '#ff3a2a';
@@ -253,7 +253,7 @@ function drawHud(ctx, state, best) {
   ctx.fillStyle = 'rgba(255,255,255,0.75)';
   ctx.font = '13px Arial, sans-serif';
   ctx.textAlign = 'right';
-  ctx.fillText('HOLD MOUSE: ODM GRAPPLE  •  SPACE: SLASH THE NAPE  •  A/D: MOVE  •  W: JUMP  •  P: PAUSE  •  M: MUTE', VIEW.width - 16, VIEW.height - 14);
+  ctx.fillText('HOLD MOUSE: SKYHOOK GRAPPLE  •  SPACE: SLASH THE NAPE  •  A/D: MOVE  •  W: JUMP  •  P: PAUSE  •  M: MUTE', VIEW.width - 16, VIEW.height - 14);
   // Wave banner.
   if (state.bannerTimer > 0 && state.banner) {
     const a = Math.min(1, state.bannerTimer);
@@ -269,10 +269,10 @@ function drawHud(ctx, state, best) {
 }
 
 function drawTitle(ctx, state, best, selectedHero) {
-  // A Colossal looms behind the title, half in the dusk haze.
+  // A Colossus looms behind the title, half in the dusk haze.
   ctx.save();
   ctx.globalAlpha = 0.4;
-  drawTitan(ctx, { kind: 'colossal', x: 1130, feetY: GROUND_Y, height: 560, skin: '#c0392b', deform: 0.5, walkPhase: 0.6, flash: 0, grabT: 0 }, state.time);
+  drawRavager(ctx, { kind: 'colossus', x: 1130, feetY: GROUND_Y, height: 560, skin: '#c0392b', deform: 0.5, walkPhase: 0.6, flash: 0, grabT: 0 }, state.time);
   ctx.restore();
   ctx.fillStyle = 'rgba(15,8,12,0.45)';
   ctx.fillRect(0, 0, VIEW.width, VIEW.height);
@@ -281,16 +281,16 @@ function drawTitle(ctx, state, best, selectedHero) {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#ff3a2a';
   ctx.font = 'bold 15px Arial, sans-serif';
-  ctx.fillText('S H I N G E K I   N O   K Y O J I N', 640, 62);
+  ctx.fillText('A U R E L I A   •   W A L L   A E G I S', 640, 62);
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 64px Arial, sans-serif';
-  ctx.fillText('ATTACK ON TITAN', 640, 122);
+  ctx.fillText('SKYFALL SLAYERS', 640, 122);
   ctx.fillStyle = '#ffd76a';
   ctx.font = 'bold 26px Arial, sans-serif';
-  ctx.fillText('— TITAN SLAYER · ODM ARCADE —', 640, 158);
+  ctx.fillText('— SKYHOOK ARCADE —', 640, 158);
   ctx.fillStyle = '#e8e0d0';
   ctx.font = '17px Arial, sans-serif';
-  ctx.fillText('Swing with your ODM gear. Slash the glowing nape. Hold Wall Maria.', 640, 188);
+  ctx.fillText('Swing with your skyhook gear. Slash the glowing nape. Hold Wall Aegis.', 640, 188);
 
   // Hero select cards.
   const cardW = TITLE_CARDS.cardW;
@@ -370,7 +370,7 @@ function drawPaused(ctx) {
   ctx.fillText('PAUSED', 640, 330);
   ctx.fillStyle = '#d8d0c0';
   ctx.font = '18px Arial, sans-serif';
-  ctx.fillText('Press P or Space to keep fighting. The Titans wait for no one.', 640, 372);
+  ctx.fillText('Press P or Space to keep fighting. The Ravagers wait for no one.', 640, 372);
 }
 
 function drawEndScreen(ctx, state, best, victory) {
@@ -380,24 +380,24 @@ function drawEndScreen(ctx, state, best, victory) {
   if (victory) {
     ctx.fillStyle = '#ffd76a';
     ctx.font = 'bold 56px Arial, sans-serif';
-    ctx.fillText('WALL MARIA STANDS!', 640, 250);
+    ctx.fillText('WALL AEGIS STANDS!', 640, 250);
     ctx.fillStyle = '#ffffff';
     ctx.font = '22px Arial, sans-serif';
-    ctx.fillText('Every Titan slain — even the Colossal. Humanity fights another day.', 640, 296);
+    ctx.fillText('Every Ravager slain — even the Colossus. Aurelia fights another day.', 640, 296);
   } else {
     ctx.fillStyle = '#ff3a2a';
     ctx.font = 'bold 56px Arial, sans-serif';
     ctx.fillText(state.wallHP <= 0 ? 'THE WALL HAS FALLEN' : 'YOU WERE EATEN', 640, 250);
     ctx.fillStyle = '#ffffff';
     ctx.font = '22px Arial, sans-serif';
-    ctx.fillText(state.wallHP <= 0 ? 'The Titans pour through the breach...' : 'A Titan got its hands on you. The Corps will avenge you.', 640, 296);
+    ctx.fillText(state.wallHP <= 0 ? 'The Ravagers pour through the breach...' : 'A Ravager got its hands on you. The Corps will avenge you.', 640, 296);
   }
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 30px Arial, sans-serif';
   ctx.fillText(`SCORE ${state.score}   •   BEST ${Math.max(best, state.score)}`, 640, 360);
   ctx.fillStyle = '#d8d0c0';
   ctx.font = '19px Arial, sans-serif';
-  ctx.fillText(`Titans slain: ${state.kills}   •   Waves cleared: ${state.wave}   •   Slashes: ${state.slashes}`, 640, 400);
+  ctx.fillText(`Ravagers slain: ${state.kills}   •   Waves cleared: ${state.wave}   •   Slashes: ${state.slashes}`, 640, 400);
   ctx.fillStyle = '#ffd76a';
   ctx.font = 'bold 20px Arial, sans-serif';
   const blink = 0.6 + 0.4 * Math.sin(state.time * 4);
@@ -421,7 +421,7 @@ export function heroCardAt(x, y) {
   return null;
 }
 
-export function createRenderer(canvas) {
+export function createPainter(canvas) {
   canvas.width = VIEW.width;
   canvas.height = VIEW.height;
   const ctx = canvas.getContext('2d');
@@ -439,7 +439,7 @@ export function createRenderer(canvas) {
         return;
       }
       drawAnchors(ctx);
-      drawTitans(ctx, state);
+      drawRavagers(ctx, state);
       drawCable(ctx, state.player);
       const p = state.player;
       if (p.invuln <= 0 || Math.floor(state.time * 12) % 2 === 0) {

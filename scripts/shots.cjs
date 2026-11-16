@@ -1,4 +1,4 @@
-// Titan Slayer screenshot harness: plain Playwright Chromium (the game is served
+// Skyfall Slayers screenshot harness: plain Playwright Chromium (the game is served
 // locally, so no egress proxy is needed), opens each ?shot= mode, waits for
 // window.__shotReady, and saves a 1280x800 JPEG into screenshots/. Run from the
 // repo root with the dev server up on :8080.

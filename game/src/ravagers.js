@@ -1,6 +1,6 @@
-// Titan Slayer — Titan art (menacing re-author).
+// Skyfall Slayers — Ravager art (menacing original design).
 // Pure canvas 2D. No network, no libraries, fully deterministic.
-// A Titan is anchored at (titan.x, titan.feetY) with total height titan.height.
+// A Ravager is anchored at (ravager.x, ravager.feetY) with total height ravager.height.
 // napePosition MUST stay exactly { x: x + h*0.10, y: feetY - h*0.80, r: h*0.075 }.
 
 // ---------------------------------------------------------------- helpers --
@@ -28,16 +28,16 @@ function skinGrad(ctx, x, y, r, skin) {
 
 // ------------------------------------------------------------ kind defs ----
 const KINDS = {
-  pure:     { name: 'Pure Titan',     skin: '#e8c39a', heightMin: 42,  heightMax: 72,  hits: 1, maxHits: 1, speed: 0.55, score: 100 },
-  tall:     { name: 'Tall Titan',     skin: '#d9a87e', heightMin: 75,  heightMax: 115, hits: 2, maxHits: 2, speed: 0.45, score: 200 },
-  female:   { name: 'Female Titan',   skin: '#f0c8a0', heightMin: 85,  heightMax: 100, hits: 3, maxHits: 3, speed: 0.70, score: 400 },
-  beast:    { name: 'Beast Titan',    skin: '#8a6a4a', heightMin: 95,  heightMax: 115, hits: 4, maxHits: 4, speed: 0.40, score: 500 },
-  armored:  { name: 'Armored Titan',  skin: '#cbb59a', heightMin: 85,  heightMax: 105, hits: 5, maxHits: 5, speed: 0.50, score: 600 },
-  colossal: { name: 'Colossal Titan', skin: '#c0392b', heightMin: 170, heightMax: 210, hits: 8, maxHits: 8, speed: 0.25, score: 1500 },
+  shambler: { name: 'Shambler Ravager', skin: '#e8c39a', heightMin: 42,  heightMax: 72,  hits: 1, maxHits: 1, speed: 0.55, score: 100 },
+  tower:    { name: 'Tower Ravager',    skin: '#d9a87e', heightMin: 75,  heightMax: 115, hits: 2, maxHits: 2, speed: 0.45, score: 200 },
+  huntress: { name: 'The Huntress',     skin: '#f0c8a0', heightMin: 85,  heightMax: 100, hits: 3, maxHits: 3, speed: 0.70, score: 400 },
+  mauler:   { name: 'The Mauler',       skin: '#8a6a4a', heightMin: 95,  heightMax: 115, hits: 4, maxHits: 4, speed: 0.40, score: 500 },
+  bulwark:  { name: 'The Bulwark',      skin: '#cbb59a', heightMin: 85,  heightMax: 105, hits: 5, maxHits: 5, speed: 0.50, score: 600 },
+  colossus: { name: 'The Colossus',     skin: '#c0392b', heightMin: 170, heightMax: 210, hits: 8, maxHits: 8, speed: 0.25, score: 1500 },
 };
 
-export function titanKindDef(kind) {
-  const d = KINDS[kind] || KINDS.pure;
+export function ravagerKindDef(kind) {
+  const d = KINDS[kind] || KINDS.shambler;
   return {
     kind, name: d.name, skin: d.skin,
     heightMin: d.heightMin, heightMax: d.heightMax,
@@ -48,8 +48,8 @@ export function titanKindDef(kind) {
 }
 
 // ------------------------------------------------------------ nape ---------
-export function napePosition(titan) {
-  return { x: titan.x + titan.height * 0.10, y: titan.feetY - titan.height * 0.80, r: titan.height * 0.075 };
+export function napePosition(ravager) {
+  return { x: ravager.x + ravager.height * 0.10, y: ravager.feetY - ravager.height * 0.80, r: ravager.height * 0.075 };
 }
 
 // ------------------------------------------------------------ steam --------
@@ -69,29 +69,29 @@ export function drawSteam(ctx, x, y, r, time, seed) {
   ctx.restore();
 }
 
-// ------------------------------------------------------------ titan --------
-export function drawTitan(ctx, titan, time) {
-  const h = titan.height;
-  const x = titan.x;
-  const feetY = titan.feetY;
-  const kind = titan.kind || 'pure';
-  const skin = titan.skin || (KINDS[kind] || KINDS.pure).skin;
-  const deform = titan.deform || 0;
-  const wp = titan.walkPhase || 0;
+// ------------------------------------------------------------ ravager ------
+export function drawRavager(ctx, ravager, time) {
+  const h = ravager.height;
+  const x = ravager.x;
+  const feetY = ravager.feetY;
+  const kind = ravager.kind || 'shambler';
+  const skin = ravager.skin || (KINDS[kind] || KINDS.shambler).skin;
+  const deform = ravager.deform || 0;
+  const wp = ravager.walkPhase || 0;
   const swing = Math.sin(wp);
   const swing2 = Math.sin(wp + Math.PI);
-  const flash = titan.flash || 0;
-  const grabT = titan.grabT || 0;
+  const flash = ravager.flash || 0;
+  const grabT = ravager.grabT || 0;
   const u = h / 100; // scale unit
 
-  // Head radius by kind: pure oversized, colossal tiny, others mid.
-  const headR = kind === 'pure' ? h * 0.105 : kind === 'colossal' ? h * 0.045 : kind === 'tall' ? h * 0.07 : h * 0.078;
+  // Head radius by kind: shambler oversized, colossus tiny, others mid.
+  const headR = kind === 'shambler' ? h * 0.105 : kind === 'colossus' ? h * 0.045 : kind === 'tower' ? h * 0.07 : h * 0.078;
   const headCX = x + h * 0.02 + deform * h * 0.02;
   const headCY = feetY - h + headR * 1.05;
   const hipY = feetY - h * 0.42;
   const shoulderY = feetY - h * 0.70;
-  const shoulderW = kind === 'armored' || kind === 'colossal' ? h * 0.17 : kind === 'beast' ? h * 0.16 : h * 0.145;
-  const armLen = kind === 'beast' ? h * 0.55 : kind === 'colossal' ? h * 0.30 : h * 0.40;
+  const shoulderW = kind === 'bulwark' || kind === 'colossus' ? h * 0.17 : kind === 'mauler' ? h * 0.16 : h * 0.145;
+  const armLen = kind === 'mauler' ? h * 0.55 : kind === 'colossus' ? h * 0.30 : h * 0.40;
   const legLen = h * 0.42;
   const dark = shade(skin, -46);
   const light = shade(skin, 30);
@@ -117,8 +117,8 @@ export function drawTitan(ctx, titan, time) {
   ctx.quadraticCurveTo(x, shoulderY - h * 0.03, x - shoulderW * 0.92, shoulderY + h * 0.02);
   ctx.closePath();
   ctx.fill();
-  // Belly shading for pure titans.
-  if (kind === 'pure') {
+  // Belly shading for shambler Ravagers.
+  if (kind === 'shambler') {
     ctx.fillStyle = 'rgba(120,70,40,0.18)';
     ctx.beginPath();
     ctx.ellipse(x, hipY - h * 0.10, h * 0.075, h * 0.10, 0, 0, Math.PI * 2);
@@ -129,9 +129,9 @@ export function drawTitan(ctx, titan, time) {
     ctx.arc(x, hipY - h * 0.16, h * 0.05, 0.3, Math.PI - 0.3);
     ctx.stroke();
   }
-  // Chest muscle lines (female / colossal).
-  if (kind === 'female' || kind === 'colossal') {
-    ctx.strokeStyle = kind === 'colossal' ? 'rgba(90,10,5,0.55)' : 'rgba(140,90,55,0.35)';
+  // Chest muscle lines (huntress / colossus).
+  if (kind === 'huntress' || kind === 'colossus') {
+    ctx.strokeStyle = kind === 'colossus' ? 'rgba(90,10,5,0.55)' : 'rgba(140,90,55,0.35)';
     ctx.lineWidth = Math.max(1, u * 1.0);
     for (const sgn of [-1, 1]) {
       ctx.beginPath();
@@ -158,21 +158,21 @@ export function drawTitan(ctx, titan, time) {
     ctx.stroke();
   }
 
-  // ---- armored plates on the torso ----
-  if (kind === 'armored') {
+  // ---- bulwark plates on the torso ----
+  if (kind === 'bulwark') {
     drawArmorPlates(ctx, x, shoulderY, hipY, shoulderW, h);
   }
-  // ---- colossal ribs + muscle striations ----
-  if (kind === 'colossal') {
+  // ---- colossus ribs + muscle striations ----
+  if (kind === 'colossus') {
     drawColossalTorso(ctx, x, shoulderY, hipY, shoulderW, h, time);
   }
-  // ---- beast fur over the torso ----
-  if (kind === 'beast') {
+  // ---- mauler fur over the torso ----
+  if (kind === 'mauler') {
     drawFur(ctx, x, shoulderY, hipY, shoulderW, h, '#6a4a30', '#5a3d24');
   }
 
-  // ---- female long blond hair down the back ----
-  if (kind === 'female') {
+  // ---- huntress long blond hair down the back ----
+  if (kind === 'huntress') {
     ctx.fillStyle = '#e8c86a';
     ctx.beginPath();
     ctx.moveTo(headCX - headR * 0.85, headCY - headR * 0.3);
@@ -197,10 +197,10 @@ export function drawTitan(ctx, titan, time) {
   drawArm(ctx, x + shoulderW, shoulderY, armLen, swing * h * 0.05, skin, dark, kind, false, h);
 
   // ---- head ----
-  drawTitanHead(ctx, kind, headCX, headCY, headR, skin, dark, light, deform, time, h);
+  drawRavagerHead(ctx, kind, headCX, headCY, headR, skin, dark, light, deform, time, h);
 
   // ---- pulsing red nape glow (gameplay-critical weak point) ----
-  const nape = napePosition(titan);
+  const nape = napePosition(ravager);
   const pulse = 0.30 + 0.16 * Math.sin(time * 3.2);
   const ng = ctx.createRadialGradient(nape.x, nape.y, 1, nape.x, nape.y, nape.r * 2.4);
   ng.addColorStop(0, `rgba(255,40,25,${pulse.toFixed(3)})`);
@@ -213,8 +213,8 @@ export function drawTitan(ctx, titan, time) {
   ctx.fillStyle = `rgba(255,60,40,${(pulse + 0.15).toFixed(3)})`;
   ellipse(ctx, nape.x, nape.y, nape.r * 0.55, nape.r * 0.75);
 
-  // ---- colossal steam ----
-  if (kind === 'colossal') {
+  // ---- colossus steam ----
+  if (kind === 'colossus') {
     drawSteam(ctx, x - h * 0.10, shoulderY, h * 0.16, time, 1.3);
     drawSteam(ctx, x + h * 0.12, hipY - h * 0.10, h * 0.14, time, 4.7);
     drawSteam(ctx, headCX, headCY - headR, h * 0.10, time, 8.2);
@@ -252,7 +252,7 @@ export function drawTitan(ctx, titan, time) {
 function drawLeg(ctx, hipX, hipY, legLen, swingX, skin, dark, kind, feetY, u) {
   const footX = hipX + swingX;
   const footY = feetY;
-  const wTop = kind === 'beast' ? 9 : 8;
+  const wTop = kind === 'mauler' ? 9 : 8;
   const wBot = 5.5;
   ctx.fillStyle = skin;
   ctx.beginPath();
@@ -274,13 +274,13 @@ function drawLeg(ctx, hipX, hipY, legLen, swingX, skin, dark, kind, feetY, u) {
   ctx.beginPath();
   ctx.ellipse(footX + (swingX >= 0 ? 3 : -3) * u, footY - 2 * u, 8 * u, 3.2 * u, 0, 0, Math.PI * 2);
   ctx.fill();
-  if (kind === 'beast') {
+  if (kind === 'mauler') {
     ctx.fillStyle = '#5a3d24';
     ctx.beginPath();
     ctx.ellipse(hipX, hipY + legLen * 0.4, 6 * u, 9 * u, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  if (kind === 'armored') {
+  if (kind === 'bulwark') {
     ctx.strokeStyle = '#8a7a62';
     ctx.lineWidth = Math.max(1, u * 1.4);
     ctx.beginPath();
@@ -294,7 +294,7 @@ function drawArm(ctx, shX, shY, armLen, swingX, skin, dark, kind, far, h) {
   const u = h / 100;
   const handX = shX + (far ? -1 : 1) * h * 0.045 + swingX;
   const handY = shY + armLen;
-  const wTop = kind === 'beast' ? 7.5 : 6.5;
+  const wTop = kind === 'mauler' ? 7.5 : 6.5;
   ctx.fillStyle = far ? shade(skin, -22) : skin;
   ctx.beginPath();
   ctx.moveTo(shX - wTop * u, shY);
@@ -316,7 +316,7 @@ function drawArm(ctx, shX, shY, armLen, swingX, skin, dark, kind, far, h) {
     ctx.lineTo(handX + i * 3 * u, handY + 8 * u);
     ctx.stroke();
   }
-  if (kind === 'beast') {
+  if (kind === 'mauler') {
     ctx.fillStyle = '#5a3d24';
     ctx.beginPath();
     ctx.ellipse(shX, shY + armLen * 0.45, 5.5 * u, 10 * u, 0, 0, Math.PI * 2);
@@ -331,7 +331,7 @@ function drawArm(ctx, shX, shY, armLen, swingX, skin, dark, kind, far, h) {
       ctx.stroke();
     }
   }
-  if (kind === 'armored') {
+  if (kind === 'bulwark') {
     ctx.strokeStyle = '#8a7a62';
     ctx.lineWidth = Math.max(1, u * 1.4);
     ctx.beginPath();
@@ -449,21 +449,21 @@ function drawFur(ctx, x, shoulderY, hipY, shoulderW, h, furA, furB) {
   }
 }
 
-// ------------------------------------------------------------ titan head ----
-function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h) {
+// ------------------------------------------------------------ ravager head --
+function drawRavagerHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h) {
   const u = h / 100;
-  const wide = kind === 'pure' ? 1.12 : kind === 'colossal' ? 0.92 : 1.0;
-  const tall = kind === 'pure' ? 1.05 : 1.0;
+  const wide = kind === 'shambler' ? 1.12 : kind === 'colossus' ? 0.92 : 1.0;
+  const tall = kind === 'shambler' ? 1.05 : 1.0;
 
   // Skull / face base.
-  if (kind === 'colossal') {
+  if (kind === 'colossus') {
     // Skinless red muscle skull with cracks.
     const cg = ctx.createRadialGradient(cx - hr * 0.3, cy - hr * 0.4, hr * 0.1, cx, cy, hr * 1.5);
     cg.addColorStop(0, '#d84a35');
     cg.addColorStop(0.6, '#c0392b');
     cg.addColorStop(1, '#7e1d10');
     ctx.fillStyle = cg;
-  } else if (kind === 'armored') {
+  } else if (kind === 'bulwark') {
     ctx.fillStyle = skinGrad(ctx, cx, cy, hr, skin);
   } else {
     ctx.fillStyle = skinGrad(ctx, cx, cy, hr, skin);
@@ -472,8 +472,8 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
   ctx.ellipse(cx, cy, hr * wide, hr * tall, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Beast: heavy brow ridge + muzzle + fur fringe.
-  if (kind === 'beast') {
+  // Mauler: heavy brow ridge + muzzle + fur fringe.
+  if (kind === 'mauler') {
     ctx.fillStyle = '#6a4a30';
     ctx.beginPath();
     ctx.ellipse(cx, cy - hr * 0.55, hr * 1.05, hr * 0.42, 0, Math.PI, 0);
@@ -483,8 +483,8 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
     ctx.ellipse(cx, cy + hr * 0.42, hr * 0.62, hr * 0.5, 0, 0, Math.PI * 2);
     ctx.fill();
   }
-  // Armored: face plates.
-  if (kind === 'armored') {
+  // Bulwark: face plates.
+  if (kind === 'bulwark') {
     ctx.strokeStyle = '#8a7a62';
     ctx.lineWidth = Math.max(1, u * 1.3);
     ctx.beginPath();
@@ -500,8 +500,8 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
       ctx.fill();
     }
   }
-  // Colossal: cracked skull + ember cracks.
-  if (kind === 'colossal') {
+  // Colossus: cracked skull + ember cracks.
+  if (kind === 'colossus') {
     ctx.strokeStyle = 'rgba(90,10,5,0.7)';
     ctx.lineWidth = Math.max(1, u * 1.2);
     ctx.beginPath();
@@ -526,8 +526,8 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
   // ---- eyes: sunken, vacant, tiny pupils ----
   const eyeDX = hr * 0.42;
   const eyeY = cy - hr * 0.12;
-  const eyeW = hr * (kind === 'female' ? 0.42 : 0.36);
-  const eyeH = hr * (kind === 'female' ? 0.30 : 0.24);
+  const eyeW = hr * (kind === 'huntress' ? 0.42 : 0.36);
+  const eyeH = hr * (kind === 'huntress' ? 0.30 : 0.24);
   for (const sgn of [-1, 1]) {
     const ex = cx + sgn * eyeDX;
     // Sunken socket shadow.
@@ -535,7 +535,7 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
     ctx.beginPath();
     ctx.ellipse(ex, eyeY, eyeW * 0.75, eyeH * 0.95, 0, 0, Math.PI * 2);
     ctx.fill();
-    if (kind === 'female') {
+    if (kind === 'huntress') {
       // Narrowed, lidded eyes with lashes.
       ctx.fillStyle = '#fdfdf8';
       ctx.beginPath();
@@ -555,7 +555,7 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
       ctx.moveTo(ex - eyeW * 0.55, eyeY - eyeH * 0.35);
       ctx.quadraticCurveTo(ex, eyeY - eyeH * 0.75, ex + eyeW * 0.55, eyeY - eyeH * 0.3);
       ctx.stroke();
-    } else if (kind === 'colossal') {
+    } else if (kind === 'colossus') {
       // Glowing ember eyes.
       const eg = 0.6 + 0.3 * Math.sin(time * 3 + sgn);
       ctx.fillStyle = `rgba(255,${Math.round(120 + 60 * eg)},30,0.95)`;
@@ -596,9 +596,9 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
   ellipse(ctx, cx + hr * 0.10, cy + hr * 0.28, hr * 0.05, hr * 0.035);
 
   // ---- grin: wide, crooked, square teeth + gum line ----
-  const grinY = cy + hr * (kind === 'beast' ? 0.42 : 0.52);
-  const grinW = hr * (kind === 'pure' ? 1.35 : kind === 'female' ? 0.85 : 1.05);
-  const grinH = hr * (kind === 'pure' ? 0.42 : 0.30);
+  const grinY = cy + hr * (kind === 'mauler' ? 0.42 : 0.52);
+  const grinW = hr * (kind === 'shambler' ? 1.35 : kind === 'huntress' ? 0.85 : 1.05);
+  const grinH = hr * (kind === 'shambler' ? 0.42 : 0.30);
   // Mouth cavity.
   ctx.fillStyle = '#4a1408';
   ctx.beginPath();
@@ -610,7 +610,7 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
   ctx.ellipse(cx, grinY - grinH * 0.28, grinW * 0.46, grinH * 0.22, 0, 0, Math.PI * 2);
   ctx.fill();
   // Individual square teeth (top row, slightly crooked by deform).
-  const teeth = kind === 'pure' ? 7 : 5;
+  const teeth = kind === 'shambler' ? 7 : 5;
   const toothW = grinW * 0.82 / teeth;
   for (let i = 0; i < teeth; i++) {
     const tx = cx - (grinW * 0.82) / 2 + toothW * (i + 0.5);
@@ -627,8 +627,8 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
     const tx = cx - (grinW * 0.7) / 2 + (grinW * 0.7 / (teeth - 2)) * (i + 0.5);
     ctx.fillRect(tx - toothW * 0.3, grinY + grinH * 0.18, toothW * 0.6, grinH * 0.22);
   }
-  // Beast fangs.
-  if (kind === 'beast') {
+  // Mauler fangs.
+  if (kind === 'mauler') {
     ctx.fillStyle = '#f2ead8';
     for (const sgn of [-1, 1]) {
       ctx.beginPath();
@@ -639,8 +639,8 @@ function drawTitanHead(ctx, kind, cx, cy, hr, skin, dark, light, deform, time, h
       ctx.fill();
     }
   }
-  // Female: long blond hair framing the face.
-  if (kind === 'female') {
+  // Huntress: long blond hair framing the face.
+  if (kind === 'huntress') {
     ctx.fillStyle = '#e8c86a';
     ctx.beginPath();
     ctx.moveTo(cx - hr * 1.0, cy - hr * 0.5);

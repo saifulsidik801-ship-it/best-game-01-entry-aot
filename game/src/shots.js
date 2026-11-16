@@ -1,12 +1,12 @@
 // The screenshot scenes behind ?shot=title|play|boss|victory|end. Each one plays the
 // real rules forward from a fresh world for a fixed number of steps, steered by an
-// autopilot that hooks anchors, swings to the nearest Titan's nape and slashes it —
+// autopilot that hooks anchors, swings to the nearest Ravager's nape and slashes it —
 // so the frame is what a short game really looks like, and the same seed always
 // gives the same frame. The end scene's pilot never slashes, so the Wall falls as
 // a hurried player would lose it.
 import { STEP } from './config.js';
 import { EVENT_OVER } from './world.js';
-import { napePosition } from './titans.js';
+import { napePosition } from './ravagers.js';
 import { heroById } from './characters.js';
 import { SCREEN_OVER, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY } from './render.js';
 
@@ -16,19 +16,19 @@ const PLAY_SECONDS = 24;
 const BOSS_SECONDS = 10;
 const END_LIMIT_SECONDS = 240;
 
-/** Steer the soldier at the nearest Titan's nape: run toward it, grapple up when
+/** Steer the soldier at the nearest Ravager's nape: run toward it, grapple up when
  *  the nape is high, release to drop onto it, slash in range. */
 function autopilot(state, slash) {
   const p = state.player;
   let target = null;
   let bestD = Infinity;
-  for (const t of state.titans) {
+  for (const t of state.ravagers) {
     const nape = napePosition(t);
     const d = Math.hypot(p.x - nape.x, p.y - nape.y);
-    if (d < bestD) { bestD = d; target = { titan: t, nape }; }
+    if (d < bestD) { bestD = d; target = { ravager: t, nape }; }
   }
   if (!target) return { direction: 0, jumpHeld: false, grapple: null, slash: false };
-  // Hold the line: never chase a Titan off the right edge — wait at x=950 for it
+  // Hold the line: never chase a Ravager off the right edge — wait at x=950 for it
   // to walk into the fight, so the frame stays mid-screen.
   if (target.nape.x > 1100) {
     const hx = 950 - p.x;
@@ -68,11 +68,11 @@ function simulateUntil(world, seconds, slash, stopWhen) {
   }
 }
 
-/** True while the soldier is mid-slash within reach of a Titan's nape. */
+/** True while the soldier is mid-slash within reach of a Ravager's nape. */
 function midNapeSlash(state) {
   const p = state.player;
   if (p.slashT <= 0.3) return false;
-  for (const t of state.titans) {
+  for (const t of state.ravagers) {
     const nape = napePosition(t);
     if (Math.hypot(p.x - nape.x, p.y - nape.y) < 110) return true;
   }
@@ -86,18 +86,18 @@ export function stageShot(name, world) {
     return { screen: SCREEN_PLAY, best: 1240, heroId: world.state.hero.id };
   }
   if (name === 'boss') {
-    world.reset(heroById('levi'));
+    world.reset(heroById('dain'));
     world.jumpToWave(10);
-    // Only the Colossal on the field, centre-screen, no escort to distract the pilot.
+    // Only the Colossus on the field, centre-screen, no escort to distract the pilot.
     world.state.spawnList = [];
-    world.state.titans = world.state.titans.filter((t) => t === world.state.boss);
+    world.state.ravagers = world.state.ravagers.filter((t) => t === world.state.boss);
     const boss = world.state.boss;
     if (boss) boss.x = 880;
     world.state.player.x = 760;
     world.state.player.y = 300;
     world.state.player.grapple = { ax: 820, ay: 250, len: 110 };
     simulateUntil(world, BOSS_SECONDS, true, midNapeSlash);
-    return { screen: SCREEN_PLAY, best: 4860, heroId: 'levi' };
+    return { screen: SCREEN_PLAY, best: 4860, heroId: 'dain' };
   }
   if (name === 'victory') {
     world.reset(world.state.hero);

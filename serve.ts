@@ -32,4 +32,4 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(8080, () => console.log('Titan Slayer at http://localhost:8080'));
+server.listen(8080, () => console.log('Skyfall Slayers at http://localhost:8080'));

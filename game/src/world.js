@@ -1,11 +1,11 @@
-// The simulation: ODM-gear swinging, nape slashes, Titans marching on Wall Maria,
-// waves that escalate to the four shifter bosses, and the win/lose loop. One metre
-// is 6.4 px, so the 60 m Colossal towers 384 px over Shiganshina's rooftops.
+// The simulation: skyhook-gear swinging, nape slashes, Ravagers marching on Wall Aegis,
+// waves that escalate to the four boss Ravagers, and the win/lose loop. One metre
+// is 6.4 px, so the 60 m Colossus towers 384 px over Aurelia's rooftops.
 import {
-  ANCHORS, GRAVITY, GROUND_Y, MAX_LIVES, STEP, TITAN_KINDS, BOSS_WAVES, VICTORY_WAVE,
+  ANCHORS, GRAVITY, GROUND_Y, MAX_LIVES, STEP, RAVAGER_KINDS, BOSS_WAVES, VICTORY_WAVE,
   VIEW, WALL_X, HEROES,
 } from './config.js';
-import { napePosition } from './titans.js';
+import { napePosition } from './ravagers.js';
 
 export const EVENT_HIT = 1;
 export const EVENT_KILL = 2;
@@ -21,13 +21,13 @@ const METER = 6.4;
 const SLASH_RANGE = 88;
 const COMBO_WINDOW = 3;
 
-function makeTitan(random, kind, x) {
-  const def = TITAN_KINDS[kind];
+function makeRavager(random, kind, x) {
+  const def = RAVAGER_KINDS[kind];
   const height = def.meters * METER * random.range(0.92, 1.08);
   const skins = ['#e8c39a', '#d9a87e', '#c99a72', '#e0b48e'];
   return {
     kind, x, feetY: GROUND_Y, height,
-    skin: kind === 'colossal' ? '#c0392b' : random.pick(skins),
+    skin: kind === 'colossus' ? '#c0392b' : random.pick(skins),
     deform: random.next(),
     walkPhase: random.range(0, Math.PI * 2),
     speed: def.speed * random.range(0.9, 1.15),
@@ -45,7 +45,7 @@ export function createWorld(random, hero) {
   const state = {
     hero: hero || HEROES[0],
     player: null,
-    titans: [],
+    ravagers: [],
     particles: [],
     texts: [],
     wave: 0,
@@ -100,59 +100,59 @@ export function createWorld(random, hero) {
     state.spawnList = [];
     const count = 2 + n;
     for (let i = 0; i < count; i += 1) {
-      state.spawnList.push(random.next() < 0.3 ? 'tall' : 'pure');
+      state.spawnList.push(random.next() < 0.3 ? 'tower' : 'shambler');
     }
     const bossKind = BOSS_WAVES[n];
     if (bossKind) state.spawnList.push(bossKind);
     state.spawnTimer = 0.8;
     state.banner = bossKind
-      ? `${TITAN_KINDS[bossKind].name} APPROACHES!`
-      : `WAVE ${n} — TITANS INBOUND`;
+      ? `${RAVAGER_KINDS[bossKind].name} APPROACHES!`
+      : `WAVE ${n} — RAVAGERS INBOUND`;
     state.bannerTimer = 2.2;
     state.chatter = n === 1
-      ? 'Erwin: Soldiers! Give your hearts! Hold the Wall!'
+      ? 'Alden: Soldiers! Hold the line! For the Wall!'
       : pickChatter();
     state.chatterTimer = 5;
   }
 
   function pickChatter() {
     const lines = [
-      'Sasha: Potato break after this one!',
-      'Connie: I\u2019m right behind you!',
-      'Jean: Keep formation! Don\u2019t be reckless!',
-      'Hange: Fascinating! Its nape is exposed!',
-      'Erwin: Advance! For humanity!',
-      'Mikasa: Eren, I\u2019ve got your back.',
-      'Levi: Tsk. Don\u2019t die, brats.',
-      'Armin: Aim for the nape — one metre down, one across!',
+      'Pippa: Snack break after this one!',
+      'Theo: I\u2019m right behind you!',
+      'Marcus: Keep formation! Don\u2019t be reckless!',
+      'Wren: Fascinating! Its nape is exposed!',
+      'Alden: Advance! For the Wall!',
+      'Sera: Kael, I\u2019ve got your back.',
+      'Dain: Tsk. Don\u2019t die, rookies.',
+      'Milo: Aim for the nape — one metre down, one across!',
     ];
     return random.pick(lines);
   }
 
-  function killTitan(titan, index) {
-    titan.dead = true;
-    state.titans.splice(index, 1);
+  function killRavager(ravager, index) {
+    ravager.dead = true;
+    state.ravagers.splice(index, 1);
     state.kills += 1;
     state.combo += 1;
     state.comboTimer = COMBO_WINDOW;
-    const base = TITAN_KINDS[titan.kind].score;
+    const base = RAVAGER_KINDS[ravager.kind].score;
     const gained = base + state.combo * 10;
     state.score += gained;
-    const nape = napePosition(titan);
+    const nape = napePosition(ravager);
     burst(nape.x, nape.y, '#c0392b', 22, 260);
-    burst(titan.x, titan.feetY - titan.height * 0.4, '#e8e0d0', 12, 140);
-    addText(titan.x, titan.feetY - titan.height - 10, `+${gained}`, '#ffd76a');
-    if (state.combo >= 3) addText(titan.x, titan.feetY - titan.height - 34, `COMBO x${state.combo}!`, '#ff6a3a');
-    if (titan.kind === 'colossal') burst(titan.x, titan.feetY - titan.height * 0.5, '#e8e0d0', 40, 320);
-    if (state.boss === titan) state.boss = null;
+    burst(ravager.x, ravager.feetY - ravager.height * 0.4, '#e8e0d0', 12, 140);
+    addText(ravager.x, ravager.feetY - ravager.height - 10, `+${gained}`, '#ffd76a');
+    if (state.combo >= 3) addText(ravager.x, ravager.feetY - ravager.height - 34, `COMBO x${state.combo}!`, '#ff6a3a');
+    if (ravager.kind === 'colossus') burst(ravager.x, ravager.feetY - ravager.height * 0.5, '#e8e0d0', 40, 320);
+    if (state.boss === ravager) state.boss = null;
   }
 
   function spawnNext() {
     const kind = state.spawnList.shift();
     const x = VIEW.width + random.range(0, 60);
-    const titan = makeTitan(random, kind, x);
-    state.titans.push(titan);
-    if (BOSS_WAVES[state.wave] === kind) state.boss = titan;
+    const ravager = makeRavager(random, kind, x);
+    state.ravagers.push(ravager);
+    if (BOSS_WAVES[state.wave] === kind) state.boss = ravager;
   }
 
   function stepPlayer(dt, input) {
@@ -176,7 +176,7 @@ export function createWorld(random, hero) {
       p.grounded = false;
     }
 
-    // ODM grapple: hold the mouse to hook the nearest anchor above.
+    // Skyhook grapple: hold the mouse to hook the nearest anchor above.
     if (input.grapple && input.grapple.down && !p.grapple) {
       let best = null;
       let bestD = 560;
@@ -239,8 +239,8 @@ export function createWorld(random, hero) {
     const p = state.player;
     let hitNape = false;
     let sparked = false;
-    for (let i = state.titans.length - 1; i >= 0; i -= 1) {
-      const t = state.titans[i];
+    for (let i = state.ravagers.length - 1; i >= 0; i -= 1) {
+      const t = state.ravagers[i];
       const nape = napePosition(t);
       const dNape = Math.hypot(p.x - nape.x, (p.y - 6) - nape.y);
       if (dNape < SLASH_RANGE + nape.r) {
@@ -248,7 +248,7 @@ export function createWorld(random, hero) {
         t.flash = 0.18;
         hitNape = true;
         burst(nape.x, nape.y, '#ff2a1a', 10, 200);
-        if (t.hitsLeft <= 0) killTitan(t, i);
+        if (t.hitsLeft <= 0) killRavager(t, i);
         continue;
       }
       const dBody = Math.hypot(p.x - t.x, (p.y - 6) - (t.feetY - t.height * 0.45));
@@ -260,10 +260,10 @@ export function createWorld(random, hero) {
     return { hitNape, sparked };
   }
 
-  function stepTitans(dt) {
+  function stepRavagers(dt) {
     let events = 0;
-    for (let i = state.titans.length - 1; i >= 0; i -= 1) {
-      const t = state.titans[i];
+    for (let i = state.ravagers.length - 1; i >= 0; i -= 1) {
+      const t = state.ravagers[i];
       t.flash = Math.max(0, t.flash - dt);
       t.grabCooldown = Math.max(0, t.grabCooldown - dt);
       t.walkPhase += dt * (t.speed / (t.height * 0.09));
@@ -273,7 +273,7 @@ export function createWorld(random, hero) {
         t.attackT += dt;
         if (t.attackT >= 1.2) {
           t.attackT = 0;
-          const dmg = t.kind === 'pure' || t.kind === 'tall' ? 8 : 15;
+          const dmg = t.kind === 'shambler' || t.kind === 'tower' ? 8 : 15;
           state.wallHP = Math.max(0, state.wallHP - dmg);
           state.shake = 0.35;
           events |= EVENT_WALL_HIT;
@@ -342,7 +342,7 @@ export function createWorld(random, hero) {
         spawnNext();
         state.spawnTimer = Math.max(0.7, 1.7 - state.wave * 0.08);
       }
-    } else if (state.titans.length === 0) {
+    } else if (state.ravagers.length === 0) {
       // Wave cleared.
       events |= EVENT_WAVE_CLEAR;
       const repair = state.hero.wallRepair || 12;
@@ -365,7 +365,7 @@ export function createWorld(random, hero) {
       if (result.hitNape) events |= EVENT_KILL;
       if (result.sparked) events |= EVENT_SPARK;
     }
-    events |= stepTitans(dt);
+    events |= stepRavagers(dt);
 
     // Particles and floating text.
     for (let i = state.particles.length - 1; i >= 0; i -= 1) {
@@ -389,7 +389,7 @@ export function createWorld(random, hero) {
   function reset(hero) {
     state.hero = hero || HEROES[0];
     resetPlayer();
-    state.titans = [];
+    state.ravagers = [];
     state.particles = [];
     state.texts = [];
     state.wave = 0;
@@ -406,12 +406,12 @@ export function createWorld(random, hero) {
     state.time = 0;
     state.shake = 0;
     state.boss = null;
-    state.chatter = 'Erwin: Soldiers! Give your hearts! Hold the Wall!';
+    state.chatter = 'Alden: Soldiers! Hold the line! For the Wall!';
     state.chatterTimer = 5;
     state.over = false;
     state.victory = false;
     state.slashes = 0;
-    state.banner = 'DEFEND WALL MARIA';
+    state.banner = 'DEFEND WALL AEGIS';
     state.bannerTimer = 2.2;
   }
 

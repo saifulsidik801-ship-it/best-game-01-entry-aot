@@ -1,4 +1,4 @@
-// Titan Slayer grapple check: hold the mouse, confirm the ODM cable attaches to an
+// Skyfall Slayers grapple check: hold the mouse, confirm the skyhook cable attaches to an
 // anchor and the soldier rises off the ground, then release and confirm it lets go.
 const { chromium } = require('/home/hatch/workspace/mm-wallet/node_modules/playwright-core');
 

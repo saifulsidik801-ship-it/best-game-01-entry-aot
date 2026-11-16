@@ -1,6 +1,6 @@
 // Synthesised sound: no audio files, everything is WebAudio oscillators and noise,
 // so the game stays offline and self-contained. A low war-drum pulse under play,
-// blade swishes, Titan roars, wall booms and a victory fanfare.
+// blade swishes, Ravager roars, wall booms and a victory fanfare.
 export function createAudio() {
   let ctx = null;
   let master = null;
@@ -57,7 +57,7 @@ export function createAudio() {
     source.start();
   }
 
-  // War-drum pulse + low bass line, D minor, the show's marching dread.
+  // War-drum pulse + low bass line, D minor, a marching dread.
   const BASS = [73.42, 73.42, 87.31, 65.41, 73.42, 98.0, 87.31, 65.41];
   function musicStep() {
     if (!ctx || muted) return;

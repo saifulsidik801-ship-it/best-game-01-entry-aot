@@ -11,7 +11,7 @@ import { createWorld, EVENT_GRAB, EVENT_KILL, EVENT_OVER, EVENT_SLASH, EVENT_SPA
 import { ACTION_CONFIRM, ACTION_PAUSE, ACTION_SLASH, createInput } from './input.js';
 import { createAudio } from './audio.js';
 import { heroById } from './characters.js';
-import { createRenderer, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY, heroCardAt } from './render.js';
+import { createPainter, SCREEN_OVER, SCREEN_PAUSED, SCREEN_PLAY, SCREEN_TITLE, SCREEN_VICTORY, heroCardAt } from './render.js';
 import { stageShot } from './shots.js';
 
 const MAX_FRAME = 0.25;
@@ -24,7 +24,7 @@ const seed = Number.isInteger(seedParam) ? seedParam : Math.floor(Math.random() 
 const canvas = document.getElementById('game');
 const status = document.getElementById('status');
 const world = createWorld(createRandom(seed), HEROES[0]);
-const renderer = createRenderer(canvas);
+const renderer = createPainter(canvas);
 const audio = createAudio();
 
 function readBest() {
@@ -72,7 +72,7 @@ function runGame() {
     get score() { return world.state.score; },
     get lives() { return world.state.lives; },
     get wallHP() { return world.state.wallHP; },
-    get titans() { return world.state.titans; },
+    get ravagers() { return world.state.ravagers; },
     get kills() { return world.state.kills; },
     get player() { return world.state.player; },
     selectHero(id) { selectedHero = id; },
@@ -98,7 +98,7 @@ function runGame() {
     accumulator = 0;
     pendingSlash = false;
     screen = SCREEN_PLAY;
-    announce(`Playing as ${world.state.hero.name}. Slash the Titans' napes.`);
+    announce(`Playing as ${world.state.hero.name}. Slash the Ravagers' napes.`);
   }
 
   function endGame(victory) {
@@ -110,7 +110,7 @@ function runGame() {
     if (victory) audio.victory();
     else audio.gameOver();
     announce(victory
-      ? `Victory! Wall Maria stands. Score ${world.state.score}.`
+      ? `Victory! Wall Aegis stands. Score ${world.state.score}.`
       : `Game over. Score ${world.state.score}. Best ${best}.`);
   }
 
@@ -191,7 +191,7 @@ function runGame() {
     renderer.draw(world.state, screen, best, selectedHero);
   }
 
-  // Leaving the tab pauses a running game rather than letting Titans march unseen.
+  // Leaving the tab pauses a running game rather than letting Ravagers march unseen.
   document.addEventListener('visibilitychange', () => {
     if (document.hidden && screen === SCREEN_PLAY) {
       screen = SCREEN_PAUSED;
@@ -199,7 +199,7 @@ function runGame() {
     }
   });
 
-  announce('Titan Slayer. Pick your soldier, press Space or click to start.');
+  announce('Skyfall Slayers. Pick your soldier, press Space or click to start.');
   requestAnimationFrame(frame);
 }
 
